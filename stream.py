@@ -100,7 +100,7 @@ def validate_paths(movie_path: str, subtitle_path: str | None = None) -> None:
         print(f"Error: Subtitle file '{subtitle_path}' not found.")
         sys.exit(1)
 
-def serve_output(stream_folder_path: str, port: int = 8000) -> NoReturn:
+def serve_output(stream_folder_path: str, port: int = 9000) -> NoReturn:
     """
     Launch a Python HTTP server to serve HLS files from the specified directory.
 
@@ -156,7 +156,7 @@ def run_ffmpeg(
 
     # Start with ffmpeg command and input files
     ffmpeg_command = ["ffmpeg"]
-    
+
     # Add all input files first
     ffmpeg_command.extend(["-i", movie_path])
     if subtitle_path:
@@ -169,7 +169,7 @@ def run_ffmpeg(
         "-map", "0:v",     # Map video from first input
         "-map", "0:a",     # Map audio from first input
     ])
-    
+
     if subtitle_path:
         ffmpeg_command.extend([
             "-map", "1:0"  # Map subtitles from second input
@@ -241,7 +241,7 @@ def main() -> None:
     # Figure out where the output should go (same folder as the movie)
     movie_folder_path = os.path.dirname(movie_path)
     stream_folder_path = os.path.join(movie_folder_path, "stream")
-    
+
     # Set global stream folder path for cleanup
     global STREAM_FOLDER_PATH
     STREAM_FOLDER_PATH = stream_folder_path

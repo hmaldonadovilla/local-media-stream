@@ -39,9 +39,9 @@ Use a virtual environment and install dependencies from `requirements.txt`.
    python app.py
    ```
 
-   The interface will be available at `http://localhost:5000`.
+   The interface listens on all network interfaces at port 6001. You can access it locally at `http://localhost:6001` or from other devices on your LAN at `http://<YOUR_HOST_IP>:6001`.
 
-6. Use the web interface to browse your `MOVIES_DIR`, select a video and optionally a subtitle file, set a subtitle delay (default is 1.5 seconds), and start streaming. The streaming output will be available at the displayed URL (`http://localhost:8000/output.m3u8`).
+6. Use the web interface to browse your `MOVIES_DIR`, select a video and optionally a subtitle file, set a subtitle delay (default is 1.5 seconds), and start streaming. The streaming output will be available at the displayed URL, e.g. `http://<YOUR_HOST_IP>:9000/output.m3u8`.
 
 ## Notes
 
