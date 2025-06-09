@@ -193,7 +193,7 @@ def start_stream():
     # Render a page showing the stream URL and a stop button
     template = '''
     <h1>Streaming started</h1>
-    <p>Stream URL: <a href="http://{{ host }}:9000/output.m3u8">http://{{ host }}:9000/output.m3u8</a></p>
+    <p>Stream URL: <a href="http://{{ host }}:9000/master.m3u8">http://{{ host }}:9000/master.m3u8</a></p>
     <form action="{{ url_for('stop_stream') }}" method="post">
         <button type="submit">Stop Streaming</button>
     </form>
