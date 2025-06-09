@@ -18,7 +18,11 @@ import shutil
 import socketserver
 import subprocess
 import sys
+from dotenv import load_dotenv
 from typing import NoReturn
+
+# Load environment variables from a .env file if present
+load_dotenv()
 
 # Global variable to store the stream folder path for cleanup
 STREAM_FOLDER_PATH = None
@@ -223,8 +227,9 @@ def main() -> None:
     """
     args = parse_arguments()
 
-    # Adjust this to your actual Movies directory path
-    movies_dir = "/Users/a57321/Movies"
+    # Directory containing your movies. Can be overridden with the MOVIES_DIR
+    # environment variable. Defaults to ~/Movies if not specified.
+    movies_dir = os.getenv("MOVIES_DIR", os.path.expanduser("~/Movies"))
 
     # Build absolute paths
     movie_path = os.path.join(movies_dir, args.movie_rel_path)
