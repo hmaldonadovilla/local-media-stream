@@ -71,9 +71,12 @@ def browse():
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{font-family:sans-serif;margin:0;padding:0}
-.header{position:sticky;top:0;background:#fff;display:flex;justify-content:space-between;align-items:center;padding:1rem;box-shadow:0 2px 5px rgba(0,0,0,0.1);z-index:1000}
-h1{margin:0;font-size:1.5rem}
-.stream-btn{background:#dc3545;color:#fff;border:none;border-radius:4px;padding:0.5rem 1rem;font-size:1rem;cursor:pointer}
+.header{position:sticky;top:0;background:#fff;display:grid;grid-template-columns:1fr auto;align-items:center;padding:1rem;box-shadow:0 2px 5px rgba(0,0,0,0.1);z-index:1000}
+h1{margin:0;font-size:1.5rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stream-btn{background:#6f42c1;color:#fff;border:none;border-radius:4px;padding:0.5rem 1rem;font-size:1rem;cursor:pointer}
+.delay-input{margin-bottom:1rem}
+.modal-actions{display:flex;justify-content:space-between;margin-top:1rem}
+.modal-actions button{padding:0.5rem 1rem;font-size:1rem;border:none;border-radius:4px;cursor:pointer}
 .container{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:10px}
 .tile{border:1px solid #ccc;border-radius:4px;padding:10px;text-align:center;word-break:break-word;display:flex;flex-direction:column;justify-content:space-between;min-height:160px}
 .tile.selected{background:#28a745;color:#fff}
@@ -119,15 +122,17 @@ h1{margin:0;font-size:1.5rem}
 <div id="panel" class="modal" onclick="if(event.target.id=='panel')this.style.display='none'">
   <div class="modal-content">
     <h2>Streaming</h2>
-    <p>Video: {{ selected_video or 'None' }}</p>
-    <p>Subtitle: {{ selected_sub or 'None' }}</p>
+    <p><u>Video</u>: {{ selected_video or 'None' }}</p>
+    <p><u>Subtitle</u>: {{ selected_sub or 'None' }}</p>
     <form action="{{ url_for('start_stream') }}" method="post">
       {% if selected_sub %}
-      Delay (s): <input name="delay" value="{{ delay }}"><br>
+      <div class="delay-input">Delay (s): <input name="delay" value="{{ delay }}"></div>
       {% endif %}
-      <button type="submit">Start Streaming</button>
+      <div class="modal-actions">
+        <button type="button" onclick="document.getElementById('panel').style.display='none'">Close</button>
+        <button type="submit">Start Streaming</button>
+      </div>
     </form>
-    <button onclick="document.getElementById('panel').style.display='none'">Close</button>
   </div>
 </div>
 </body></html>
