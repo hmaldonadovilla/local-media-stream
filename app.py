@@ -58,6 +58,11 @@ def browse():
                 continue
         entries.append(entry)
 
+    tv_exists = os.path.isdir(os.path.join(MOVIES_DIR, 'TV'))
+    selected_video = session.get('video')
+    selected_sub = session.get('subtitle')
+    delay = session.get('delay', 1.5)
+
     template = '''
 <!doctype html>
 <html lang="en">
@@ -67,41 +72,71 @@ def browse():
 body{font-family:sans-serif;margin:0;padding:0}
 h1{padding:1rem}
 .container{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:10px}
-.tile{border:1px solid #ccc;border-radius:4px;padding:10px;text-align:center;word-break:break-word}
-.tile a{display:block;margin-top:5px;text-decoration:none;color:#fff;background:#007bff;padding:5px;border-radius:3px}
+.tile{border:1px solid #ccc;border-radius:4px;padding:10px;text-align:center;word-break:break-word;display:flex;flex-direction:column;justify-content:space-between;min-height:160px}
+.tile.selected{background:#28a745;color:#fff}
+.tile a.action{margin-top:5px;text-decoration:none;color:#fff;background:#007bff;padding:5px;border-radius:3px}
 .icon{font-size:2rem}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:flex-start;padding-top:50px}
+.modal-content{background:#fff;padding:20px;border-radius:5px;min-width:250px}
 </style>
 </head><body>
 <h1>Browse {{ rel_path or '/' }}</h1>
+<button onclick="document.getElementById('panel').style.display='flex'">Streaming Panel</button>
 <div class="container">
+  {% if tv_exists %}
+  <div class="tile">
+    <div class="icon">📺</div>
+    <span>TV</span>
+    <a class="action" href="{{ url_for('browse', path='TV') }}">Open</a>
+  </div>
+  {% endif %}
   {% if rel_path %}
   <div class="tile">
     <div class="icon">📁</div>
-    <a href="{{ url_for('browse', path=parent) }}">..</a>
+    <a class="action" href="{{ url_for('browse', path=parent) }}">..</a>
   </div>
   {% endif %}
   {% for e in entries %}
-  <div class="tile">
+  <div class="tile {% if e.path==selected_video or e.path==selected_sub %}selected{% endif %}">
     {% if e.is_dir %}
       <div class="icon">📁</div>
       <span>{{ e.name }}</span>
-      <a href="{{ url_for('browse', path=e.path) }}">Open</a>
+      <a class="action" href="{{ url_for('browse', path=e.path) }}">Open</a>
     {% else %}
       <div class="icon">🎞️</div>
       <span>{{ e.name }}</span>
-      <a href="{{ url_for('select_file', path=e.path) }}">{% if e.type=='video' %}Select Video{% else %}Select Subtitle{% endif %}</a>
+      <a class="action" href="{{ url_for('select_file', path=e.path) }}">{% if e.type=='video' %}Select Video{% else %}Select Subtitle{% endif %}</a>
     {% endif %}
   </div>
   {% endfor %}
 </div>
-<form action="{{ url_for('start_stream') }}" method="post" style="padding:10px;">
-  Delay (s): <input name="delay" value="{{ session.get('delay',1.5) }}">
-  <button type="submit">Start Streaming</button>
-</form>
+
+<div id="panel" class="modal" onclick="if(event.target.id=='panel')this.style.display='none'">
+  <div class="modal-content">
+    <h2>Streaming</h2>
+    <p>Video: {{ selected_video or 'None' }}</p>
+    <p>Subtitle: {{ selected_sub or 'None' }}</p>
+    <form action="{{ url_for('start_stream') }}" method="post">
+      {% if selected_sub %}
+      Delay (s): <input name="delay" value="{{ delay }}"><br>
+      {% endif %}
+      <button type="submit">Start Streaming</button>
+    </form>
+    <button onclick="document.getElementById('panel').style.display='none'">Close</button>
+  </div>
+</div>
 </body></html>
 '''
-    return render_template_string(template, entries=entries, rel_path=rel_path,
-                                  parent=os.path.dirname(rel_path))
+    return render_template_string(
+        template,
+        entries=entries,
+        rel_path=rel_path,
+        parent=os.path.dirname(rel_path),
+        selected_video=selected_video,
+        selected_sub=selected_sub,
+        delay=delay,
+        tv_exists=tv_exists,
+    )
 
 @app.route('/select')
 def select_file():
