@@ -58,7 +58,8 @@ def browse():
                 continue
         entries.append(entry)
 
-    tv_exists = os.path.isdir(os.path.join(MOVIES_DIR, 'TV'))
+    # Show TV shortcut only at the root of MOVIES_DIR
+    tv_exists = (rel_path == '' and os.path.isdir(os.path.join(MOVIES_DIR, 'TV')))
     selected_video = session.get('video')
     selected_sub = session.get('subtitle')
     delay = session.get('delay', 1.5)
@@ -70,18 +71,22 @@ def browse():
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{font-family:sans-serif;margin:0;padding:0}
-h1{padding:1rem}
+.header{position:sticky;top:0;background:#fff;display:flex;justify-content:space-between;align-items:center;padding:1rem;box-shadow:0 2px 5px rgba(0,0,0,0.1);z-index:1000}
+h1{margin:0;font-size:1.5rem}
+.stream-btn{background:#dc3545;color:#fff;border:none;border-radius:4px;padding:0.5rem 1rem;font-size:1rem;cursor:pointer}
 .container{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:10px}
 .tile{border:1px solid #ccc;border-radius:4px;padding:10px;text-align:center;word-break:break-word;display:flex;flex-direction:column;justify-content:space-between;min-height:160px}
 .tile.selected{background:#28a745;color:#fff}
 .tile a.action{margin-top:5px;text-decoration:none;color:#fff;background:#007bff;padding:5px;border-radius:3px}
 .icon{font-size:2rem}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:flex-start;padding-top:50px}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:flex-start;padding-top:50px;z-index:2000}
 .modal-content{background:#fff;padding:20px;border-radius:5px;min-width:250px}
 </style>
 </head><body>
-<h1>Browse {{ rel_path or '/' }}</h1>
-<button onclick="document.getElementById('panel').style.display='flex'">Streaming Panel</button>
+<div class="header">
+  <h1>Browse {{ rel_path or '/' }}</h1>
+  <button class="stream-btn" onclick="document.getElementById('panel').style.display='flex'">Streaming Panel</button>
+</div>
 <div class="container">
   {% if tv_exists %}
   <div class="tile">
