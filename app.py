@@ -5,6 +5,12 @@ from dotenv import load_dotenv
 
 from stream import run_ffmpeg, validate_paths
 import shutil
+import socket
+
+try:
+    import psutil  # Optional; used for VPN detection
+except ImportError:
+    psutil = None
 
 # Load environment variables from a .env file if present
 load_dotenv()
@@ -32,6 +38,43 @@ def ensure_local(path: str) -> None:
             f.read(1)
     except Exception as exc:
         print(f"Warning: could not access {path}: {exc}")
+
+
+# --- VPN and LAN helpers ---
+def is_vpn_active() -> bool:
+    """
+    Heuristically detect whether the host is connected to a VPN.
+
+    We look for network interfaces whose names contain typical VPN keywords
+    (tun, tap, ppp, wg, vpn) and that have a non‑loopback IPv4 address.
+    Requires psutil; if psutil is unavailable, we assume no VPN.
+    """
+    if psutil is None:  # psutil not installed
+        return False
+
+    for name, addrs in psutil.net_if_addrs().items():
+        lname = name.lower()
+        if any(tag in lname for tag in ('tun', 'tap', 'ppp', 'wg', 'vpn')):
+            for addr in addrs:
+                if addr.family == socket.AF_INET and not addr.address.startswith('127.'):
+                    return True
+    return False
+
+
+def get_lan_ip() -> str:
+    """
+    Return the primary LAN IPv4 address by opening a UDP socket to a dummy
+    external address; no packets are sent, but the OS reveals the source IP.
+    Falls back to 127.0.0.1 if the operation fails.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(('8.8.8.8', 80))
+        return s.getsockname()[0]
+    except OSError:
+        return '127.0.0.1'
+    finally:
+        s.close()
 
 @app.route('/')
 def browse():
@@ -189,7 +232,10 @@ def start_stream():
         run_ffmpeg(movie_path, subtitle_path, stream_folder, 9000, delay)
 
     threading.Thread(target=worker, daemon=True).start()
-    host = request.host.split(':')[0]
+    if is_vpn_active():
+        host = get_lan_ip()
+    else:
+        host = request.host.split(':')[0]
     # Render a page showing the stream URL and a stop button
     template = '''
     <h1>Streaming started</h1>
